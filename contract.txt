@@ -1,0 +1,4 @@
+go server to serve and process routes
+implement in redis first
+save all bookmarks for a particular login
+
