@@ -25,7 +25,6 @@ func get(w http.ResponseWriter, r *http.Request) {
 		if hasErrors {
 			return
 		}
-		fmt.Println("in")
 		bookMutex.RLock()
 		value := bookstore[string(values.Get("key"))]
 		bookMutex.RUnlock()
@@ -42,12 +41,42 @@ func get(w http.ResponseWriter, r *http.Request) {
 
 func set(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
+		values, hasErrors := gateWay(w, r)
+		if hasErrors {
+			return
+		}
+		bookMutex.Lock()
+		bookstore[string(values.Get("key"))] = string(values.Get("value"))
+		bookMutex.Unlock()
 
+		fmt.Fprintf(w, "success")
+	} else {
+		errReturn(nil, "Only POST accepted", w)
 	}
 }
 
 func remove(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodDelete {
+		values, hasErrors := gateWay(w, r)
+		if hasErrors {
+			return
+		}
+		bookMutex.Lock()
+		delete(bookstore, values.Get("key"))
+		bookMutex.Unlock()
+
+		fmt.Fprint(w, "success")
+	}
 }
 
 func list(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		bookMutex.RLock()
+		for key, value := range bookstore {
+			fmt.Fprintln(w, key, ":", value)
+		}
+		bookMutex.RUnlock()
+	} else {
+		errReturn(nil, "Only GET accepted", w)
+	}
 }
