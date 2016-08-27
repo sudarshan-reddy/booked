@@ -1,10 +1,22 @@
-package main
+package crud
 
 import (
 	"fmt"
 	"net/http"
 	"net/url"
 )
+
+func errReturn(err error, errString string, w http.ResponseWriter) bool {
+	if err != nil || errString != "" {
+		w.WriteHeader(http.StatusBadRequest)
+		if err != nil {
+			fmt.Fprint(w, "Error: ", err)
+		}
+		fmt.Fprint(w, "Error: ", errString)
+		return true
+	}
+	return false
+}
 
 func gateWay(w http.ResponseWriter, r *http.Request) (url.Values, bool) {
 	values, err := url.ParseQuery(r.URL.RawQuery)
